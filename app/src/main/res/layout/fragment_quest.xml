@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/quest_fragment_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".QuestFragment">
+
+    <!-- 퀘스트 화면 제목 -->
+    <TextView
+        android:id="@+id/tv_quest_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="일일 퀘스트"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 퀘스트 리스트 (RecyclerView) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_quests"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/item_quest" />
+
+    <!-- 완료된 퀘스트 수 표시용 텍스트 -->
+    <TextView
+        android:id="@+id/tv_quest_summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0/3 완료"
+        android:textSize="14sp"
+        android:layout_marginTop="12dp" />
+</LinearLayout>

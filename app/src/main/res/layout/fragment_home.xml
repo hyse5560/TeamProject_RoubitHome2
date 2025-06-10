@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomeFragment">
+
+    <ScrollView
+        android:id="@+id/scroll_goals"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 유저 레벨 -->
+            <TextView
+                android:id="@+id/tv_user_level"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lv.1"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- 유저 레벨 energy bar -->
+            <ProgressBar
+                android:id="@+id/progress_energy"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="120dp"
+                android:layout_height="12dp"
+                android:layout_marginTop="8dp"
+                android:max="100"
+                android:progress="30"
+                android:progressDrawable="@drawable/progress_energy"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_user_level" />
+
+            <ImageView
+                android:id="@+id/iv_window"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:contentDescription="창문"
+                android:src="@drawable/window"
+                app:layout_constraintBottom_toTopOf="@+id/iv_rabbit"
+                app:layout_constraintEnd_toStartOf="@+id/iv_rabbit"
+                app:layout_constraintHorizontal_bias="3.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="1.0" />
+
+            <ImageView
+                android:id="@+id/iv_rabbit"
+                android:layout_width="150dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="180dp"
+                android:contentDescription="토끼"
+                android:src="@drawable/babyrabbit"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.497"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/mission_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/iv_rabbit"
+                android:background="@drawable/rounded_corners_16dp">
+
+                <!-- 오늘 날짜 표시 -->
+                <TextView
+                    android:id="@+id/tv_today_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:text="오늘 날짜"
+                    android:orientation="vertical"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 목표 목록 타이틀 -->
+                <TextView
+                    android:id="@+id/tv_goal_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_today_date"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:text="오늘의 목표"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:id="@+id/layout_goal_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_goal_title"
+                    android:orientation="vertical" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <Button
+                android:id="@+id/btn_routine_list"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="75dp"
+                android:text="📌 인기 루틴 보기"
+                app:layout_constraintBottom_toTopOf="@id/btn_routine_bundle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/mission_container" />
+
+            <Button
+                android:id="@+id/btn_routine_bundle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="🧩 루틴 묶음 추가하기"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_routine_list" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                app:layout_constraintTop_toBottomOf="@+id/btn_routine_bundle"/>
+
+            <!-- 체크박스 영역은 Java에서 동적으로 추가 -->
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

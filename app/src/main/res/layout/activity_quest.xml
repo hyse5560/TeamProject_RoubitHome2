@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/quest_activity_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".QuestActivity">
+
+    <!-- 타이틀 -->
+    <TextView
+        android:id="@+id/tv_quest_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="일일 퀘스트"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 초기화까지 남은 시간 (선택 사항) -->
+    <TextView
+        android:id="@+id/tv_reset_timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="초기화까지 07:57:20"
+        android:textSize="14sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_quests"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"
+        tools:itemCount="4"
+        tools:listitem="@layout/item_quest"
+        tools:layoutManager="LinearLayoutManager"/>
+
+    <!-- 완료 상태 텍스트 -->
+    <TextView
+        android:id="@+id/tv_quest_summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0/4 완료"
+        android:textSize="14sp"
+        android:layout_gravity="end"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>
