@@ -14,10 +14,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
 
-        btnPopularRoutines = findViewById(R.id.btnPopularRoutines);
-        btnRoutineBundles = findViewById(R.id.btnRoutineBundles);
 
         // 인기 루틴 보기 화면으로 이동
         btnPopularRoutines.setOnClickListener(new View.OnClickListener() {

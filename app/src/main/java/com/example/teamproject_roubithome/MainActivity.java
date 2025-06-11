@@ -57,5 +57,28 @@ public class MainActivity extends AppCompatActivity {
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
     }
+    public void showWiseSayingFragment() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("showRabbitDialog", true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // Clear previous activities and start fresh
+        startActivity(intent);
+    }
+    public void showCalendarFragment() {
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav.setSelectedItemId(R.id.nav_calendar);
 
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, new CalendarFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+    public void showTodoRecommendFragment() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("showTodoRecommend", true);
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav.setSelectedItemId(R.id.nav_home);
+
+
+    }
 }

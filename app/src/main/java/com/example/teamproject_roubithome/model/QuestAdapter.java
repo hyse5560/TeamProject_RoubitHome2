@@ -1,5 +1,6 @@
 package com.example.teamproject_roubithome.model;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +17,18 @@ import java.util.List;
 
 public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHolder> {
 
-    private List<QuestItem> questList;
+    public interface OnItemClickListener {
+        void onItemClick(QuestItem item);
+    }
 
-    public QuestAdapter(List<QuestItem> questList) {
+    private List<QuestItem> questList;
+    private OnItemClickListener listener;
+    private Context context;
+
+    public QuestAdapter(Context context, List<QuestItem> questList, OnItemClickListener listener) {
+        this.context = context;
         this.questList = questList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -36,11 +45,16 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
         holder.title.setText(quest.getTitle());
         String rewardText = "🥕 당근 " + quest.getReward() + "개";
         holder.button.setText(quest.isCompleted() ? "완료됨" : "하러가기");
+
         holder.button.setOnClickListener(v -> {
             if (!quest.isCompleted()) {
                 quest.setCompleted(true);
                 notifyItemChanged(position);
                 // TODO: 당근 획득 처리 및 레벨 상승 로직 추가
+            }
+
+            if (listener != null) {
+                listener.onItemClick(quest);
             }
         });
     }
