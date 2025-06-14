@@ -2,45 +2,49 @@ package com.example.teamproject_roubithome.model;
 
 public class QuestItem {
     private String title;
-    private String description;
     private int reward;
-    private boolean isCompleted;
-    private boolean isCoinReward; // 코인 보상 여부 추가
-    private int iconResId; // 아이콘 리소스 ID 추가
-    private String buttonText; // 버튼 텍스트 추가
+    private boolean completed;
+    private boolean claimed; // 보상을 받았는지 여부를 나타내는 필드
 
-    // 기본 생성자
-    public QuestItem(String title, int reward, boolean isCompleted) {
+    // 초기 퀘스트용 생성자
+    public QuestItem(String title, int reward, boolean completed) {
         this.title = title;
-        this.description = description;
         this.reward = reward;
-        this.isCompleted = isCompleted;
-        this.isCoinReward = false; // 명시적으로 false 처리
-        this.iconResId = iconResId; // 아이콘 리소스 ID 초기화
-        this.buttonText = buttonText; // 버튼 텍스트 초기화
+        this.completed = completed;
+        this.claimed = false; // 기본값: 3개 인자로 만들 때는 보상받지 않은 상태로 초기화
     }
 
-    // 코인 보상 여부가 있는 생성자
-    public QuestItem(String title, int reward, boolean isCompleted, boolean isCoinReward, int iconResId, String buttonText) {
+    // 상태 로드용 생성자
+    public QuestItem(String title, int reward, boolean completed, boolean claimed) {
         this.title = title;
         this.reward = reward;
-        this.isCompleted = isCompleted;
-        this.isCoinReward = isCoinReward;
-        this.iconResId = iconResId; // 아이콘 리소스 ID 초기화
-        this.buttonText = buttonText; // 버튼 텍스트 초기화
-        this.description = null; // 필요시 null
+        this.completed = completed;
+        this.claimed = claimed; // 처음에는 보상받지 않은 상태로 초기화
     }
 
 
-    public String getTitle() { return title; }
-    public String getDescription() { return description; }
-    public int getReward() { return reward; }
-    public boolean isCompleted() { return isCompleted; }
-    public boolean isCoinReward() { return isCoinReward; }
-    public int getIconResId() { return iconResId; } // 아이콘 리소스 ID getter 추가
-    public String getButtonText() { return buttonText; } // 버튼 텍스트 getter 추가
+    // 기존 getter 및 setter는 그대로 유지합니다.
+    public String getTitle() {
+        return title;
+    }
+
+    public int getReward() {
+        return reward;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
 
     public void setCompleted(boolean completed) {
-        isCompleted = completed;
+        this.completed = completed;
+    }
+
+    public boolean isClaimed() {
+        return claimed;
+    }
+
+    public void setClaimed(boolean claimed) {
+        this.claimed = claimed;
     }
 }

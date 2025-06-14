@@ -18,7 +18,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.concurrent.TimeUnit;
+import java.util.Calendar;
 
+import static android.content.Context.MODE_PRIVATE; // 필요시 추가
 
 public class CalendarFragment extends Fragment {
 
@@ -28,11 +30,21 @@ public class CalendarFragment extends Fragment {
     private TextView ddayTextView;
     private Button writeMemoButton;
     private TextView appUsageTextView;
-    private SharedPreferences prefs;
+    private SharedPreferences memoPrefs; // 메모 전용 SharedPreferences
+    private SharedPreferences appPrefs; // 앱 전체 설정(퀘스트) SharedPreferences
 
     private int selectedYear = -1;
     private int selectedMonth = -1;
     private int selectedDay = -1;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 메모 저장용 SharedPreferences
+        memoPrefs = requireContext().getSharedPreferences("Memos", MODE_PRIVATE);
+        // 앱 전체 설정(퀘스트)용 SharedPreferences (MainActivity와 동일한 이름 사용)
+        appPrefs = requireContext().getSharedPreferences("CheckInPrefs", MODE_PRIVATE);
+    }
 
     @Nullable
     @Override
@@ -48,8 +60,6 @@ public class CalendarFragment extends Fragment {
         ddayTextView = view.findViewById(R.id.ddayTextView);
         writeMemoButton = view.findViewById(R.id.memoButton);
         appUsageTextView = view.findViewById(R.id.appUsageTextView);
-
-        prefs = requireContext().getSharedPreferences("Memos", requireContext().MODE_PRIVATE);
 
         calendarView.setOnDateChangeListener((viewObj, year, month, dayOfMonth) -> {
             selectedYear = year;
@@ -76,8 +86,8 @@ public class CalendarFragment extends Fragment {
         builder.setTitle("메모: " + dateKey);
 
         final EditText input = new EditText(requireContext());
-        String savedMemo = prefs.getString("memo_" + dateKey, "");
-        String savedMemoDate = prefs.getString("memoDate_" + dateKey, "");
+        String savedMemo = memoPrefs.getString("memo_" + dateKey, "");
+        String savedMemoDate = memoPrefs.getString("memoDate_" + dateKey, "");
 
         if (!savedMemo.isEmpty() && !savedMemoDate.isEmpty()) {
             input.setText(savedMemo + "\n\n(작성일: " + savedMemoDate + ")");
@@ -88,30 +98,43 @@ public class CalendarFragment extends Fragment {
         builder.setPositiveButton("저장", (dialog, which) -> {
             String memo = input.getText().toString();
             String today = getTodayString();
-            prefs.edit()
+            memoPrefs.edit() // 메모는 memoPrefs에 저장
                     .putString("memo_" + dateKey, memo)
                     .putString("memoDate_" + dateKey, today)
                     .apply();
+
+            // --- 일기 쓰기 퀘스트 완료 상태 저장 ---
+            // 선택된 날짜가 '오늘'인 경우에만 퀘스트 완료로 간주합니다.
+            java.util.Calendar currentCal = java.util.Calendar.getInstance();
+            int currentYear = currentCal.get(Calendar.YEAR);
+            int currentMonth = currentCal.get(Calendar.MONTH); // Calendar.MONTH는 0부터 시작
+            int currentDay = currentCal.get(Calendar.DAY_OF_MONTH);
+
+            if (selectedYear == currentYear && selectedMonth == currentMonth && selectedDay == currentDay) {
+                // MainActivity에 정의된 KEY_DIARY_WRITTEN_TODAY 키를 사용합니다.
+                appPrefs.edit().putBoolean(MainActivity.KEY_DIARY_WRITTEN_TODAY, true).apply();
+                Toast.makeText(requireContext(), "일기 작성 완료! 퀘스트 보상을 받을 수 있습니다.", Toast.LENGTH_SHORT).show();
+            }
+            // --------------------------------------------------
         });
 
         builder.setNegativeButton("취소", null);
         builder.show();
     }
 
+    // ... (updateDday, showAppUsageDays, getTodayString, calculateDateDiffInDays 메서드들은 그대로 유지) ...
+
     private void updateDday(int year, int month, int dayOfMonth) {
-        // 현재 날짜
         java.util.Calendar today = java.util.Calendar.getInstance();
         today.set(java.util.Calendar.HOUR_OF_DAY, 0);
         today.set(java.util.Calendar.MINUTE, 0);
         today.set(java.util.Calendar.SECOND, 0);
         today.set(java.util.Calendar.MILLISECOND, 0);
 
-        // 선택한 날짜
         java.util.Calendar target = java.util.Calendar.getInstance();
         target.set(year, month, dayOfMonth, 0, 0, 0);
         target.set(java.util.Calendar.MILLISECOND, 0);
 
-        // 날짜 차이 계산
         long diffInMillis = target.getTimeInMillis() - today.getTimeInMillis();
         long dday = TimeUnit.MILLISECONDS.toDays(diffInMillis);
 
@@ -120,11 +143,13 @@ public class CalendarFragment extends Fragment {
     }
 
     private void showAppUsageDays() {
-        String firstLaunch = prefs.getString("firstLaunchDate", null);
+        // 이 부분도 appPrefs를 사용하도록 변경해야 할 수 있습니다. (현재는 memoPrefs 사용)
+        // 앱 사용 일수 저장 로직이 어디에 저장되는지에 따라 변경
+        String firstLaunch = appPrefs.getString("firstLaunchDate", null); // appPrefs 사용
         String today = getTodayString();
 
         if (firstLaunch == null) {
-            prefs.edit().putString("firstLaunchDate", today).apply();
+            appPrefs.edit().putString("firstLaunchDate", today).apply(); // appPrefs 사용
             firstLaunch = today;
         }
 
@@ -155,5 +180,4 @@ public class CalendarFragment extends Fragment {
         long millisDiff = to.getTimeInMillis() - from.getTimeInMillis();
         return TimeUnit.MILLISECONDS.toDays(millisDiff) + 1;
     }
-
 }

@@ -41,10 +41,23 @@
                 android:layout_height="12dp"
                 android:layout_marginTop="8dp"
                 android:max="100"
-                android:progress="30"
+                android:progress="0"
                 android:progressDrawable="@drawable/progress_energy"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_user_level" />
+
+            <!-- 유저 레벨 퍼센트 -->
+            <TextView
+                android:id="@+id/tv_energy_percentage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"
+                android:textSize="12sp"
+                android:textColor="@color/black"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/progress_energy"
+                app:layout_constraintTop_toTopOf="@id/progress_energy"
+                app:layout_constraintBottom_toBottomOf="@id/progress_energy" />
 
             <ImageView
                 android:id="@+id/iv_window"
@@ -138,7 +151,6 @@
                 android:layout_height="25dp"
                 app:layout_constraintTop_toBottomOf="@+id/btn_routine_bundle"/>
 
-            <!-- 체크박스 영역은 Java에서 동적으로 추가 -->
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 

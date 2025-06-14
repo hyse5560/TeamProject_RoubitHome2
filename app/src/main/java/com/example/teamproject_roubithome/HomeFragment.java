@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.view.ViewGroup.LayoutParams;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,16 +34,24 @@ import java.util.Locale;
 public class HomeFragment extends Fragment {
 
     private TextView tvUserLevel;
+    private TextView tvEnergyPercentage;
     private ImageView ivRabbit;
     private Button btnRoutineList, btnRoutineBundle;
-
+    private ProgressBar energyBar;
     private SharedPreferences prefs;
+
     private static final String PREFS_NAME = "CheckInPrefs";
-    private static final String KEY_TOTAL_DAYS = "total_checkin_days";
+    private static final String KEY_TOTAL_ENERGY = "total_energy";
+
+    private static final String KEY_WISE_SAYING_VIEWED_TODAY = "wise_saying_viewed_today";
+    private static final String KEY_WISE_SAYING_LAST_VIEW_DATE = "wise_saying_last_view_date";
+    public static final String KEY_WISE_SAYING_REWARD_CLAIMED_TODAY = "wise_saying_reward_claimed_today";
+
+    public static final String KEY_DIARY_REWARD_CLAIMED_TODAY = "diary_reward_claimed_today";
     private static final int MAX_GOALS = 5;
     private static final String KEY_GOAL_PREFIX = "goal_";
     private static final String KEY_GOAL_CHECKED_PREFIX = "goal_checked_";
-
+    
     private List<RabbitDialogContent> rabbitDialogContents;
 
     public HomeFragment() {}
@@ -59,8 +68,9 @@ public class HomeFragment extends Fragment {
 
         prefs = getActivity().getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        ProgressBar energyBar = view.findViewById(R.id.progress_energy);
+        energyBar = view.findViewById(R.id.progress_energy);
         tvUserLevel = view.findViewById(R.id.tv_user_level);
+        tvEnergyPercentage = view.findViewById(R.id.tv_energy_percentage);
         ivRabbit = view.findViewById(R.id.iv_rabbit);
         TextView tvTodayDate = view.findViewById(R.id.tv_today_date);
         LinearLayout layoutGoalContainer = view.findViewById(R.id.layout_goal_container);
@@ -71,6 +81,9 @@ public class HomeFragment extends Fragment {
         tvTodayDate.setText(today);
 
         initializeRabbitDialogContents();
+
+        // 매일 퀘스트 상태 초기화 확인
+        checkAndResetDailyQuestState();
 
         for (int i = 0; i < MAX_GOALS; i++) {
             String goalText = prefs.getString(KEY_GOAL_PREFIX + i, "");
@@ -94,17 +107,19 @@ public class HomeFragment extends Fragment {
             layoutGoalContainer.addView(checkBox);
         }
 
-        int totalDays = prefs.getInt(KEY_TOTAL_DAYS, 1);
-        int level = Math.min(10, 1 + totalDays / 3); // 3일마다 레벨 업
-        int progress = (int) ((totalDays % 3) / 3.0f * 100);
-        energyBar.setProgress(progress);
-        tvUserLevel.setText("Lv." + level);
+        updateEnergyBarAndLevel();
+
 
         String[] goals = {
                 "🧘‍♀️ 스트레칭 10분 하기",
-                "📖 책 10쪽 이상 읽기",
+                "📖 책 30쪽 이상 읽기",
                 "🥕 채소 한 번 이상 먹기"
         };
+
+        View spacer = new View(getContext());
+        int dp50 = (int) (50 * getResources().getDisplayMetrics().density);
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp50));
+        layoutGoalContainer.addView(spacer);
 
         for (String goal : goals) {
             CheckBox checkBox = new CheckBox(getContext());
@@ -114,13 +129,6 @@ public class HomeFragment extends Fragment {
             layoutGoalContainer.addView(checkBox);
         }
 
-        if (level <= 3) {
-            ivRabbit.setImageResource(R.drawable.babyrabbit);
-        } else if (level <= 6) {
-            ivRabbit.setImageResource(R.drawable.teenrabbit);
-        } else {
-            ivRabbit.setImageResource(R.drawable.adultrabbit);
-        }
 
         ivRabbit.setOnClickListener(v -> {
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(ivRabbit, "scaleX", 1f, 1.1f, 1f);
@@ -136,6 +144,47 @@ public class HomeFragment extends Fragment {
         btnRoutineBundle.setOnClickListener(v -> startActivity(new Intent(getContext(), RoutineBundleActivity.class)));
     }
 
+    public void addEnergy(int amount) {
+        int currentEnergy = prefs.getInt(KEY_TOTAL_ENERGY, 0);
+        int newEnergy = currentEnergy + amount;
+        prefs.edit().putInt(KEY_TOTAL_ENERGY, newEnergy).apply();
+        updateEnergyBarAndLevel();
+    }
+
+    private void updateEnergyBarAndLevel() {
+        int totalEnergy = prefs.getInt(KEY_TOTAL_ENERGY, 0);
+        int level = Math.min(10, 1 + totalEnergy / 100);
+        int progress = totalEnergy % 100;
+
+        energyBar.setProgress(progress);
+        tvUserLevel.setText("Lv." + level);
+        tvEnergyPercentage.setText(progress + "%");
+
+        if (level <= 5) {
+            ivRabbit.setImageResource(R.drawable.babyrabbit);
+        } else if (level <= 10) {
+            ivRabbit.setImageResource(R.drawable.teenrabbit);
+        } else {
+            ivRabbit.setImageResource(R.drawable.adultrabbit);
+        }
+    }
+
+    // 명언 보기 퀘스트의 일일 초기화를 담당하는 메서드
+    private void checkAndResetDailyQuestState() {
+        String todayDate = new SimpleDateFormat("yyyyMMdd", Locale.KOREAN).format(Calendar.getInstance().getTime());
+        String lastViewDate = prefs.getString(KEY_WISE_SAYING_LAST_VIEW_DATE, "");
+
+        if (!todayDate.equals(lastViewDate)) {
+            // 날짜가 바뀌었으면 모든 관련 상태를 초기화
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean(KEY_WISE_SAYING_VIEWED_TODAY, false);
+            editor.putString(KEY_WISE_SAYING_LAST_VIEW_DATE, todayDate);
+            editor.putBoolean(KEY_WISE_SAYING_REWARD_CLAIMED_TODAY, false);
+            editor.putBoolean(KEY_DIARY_REWARD_CLAIMED_TODAY, false);
+            editor.apply();
+        }
+    }
+
     private void showRabbitDialog() {
         Random random = new Random();
         RabbitDialogContent content = rabbitDialogContents.get(random.nextInt(rabbitDialogContents.size()));
@@ -143,7 +192,10 @@ public class HomeFragment extends Fragment {
         new AlertDialog.Builder(getContext())
                 .setTitle(content.title)
                 .setMessage(content.message)
-                .setPositiveButton("확인", null)
+                .setPositiveButton("확인", (dialog, which) -> {
+                    // 명언을 확인했음을 SharedPreferences에 저장
+                    prefs.edit().putBoolean(KEY_WISE_SAYING_VIEWED_TODAY, true).apply();
+                })
                 .show();
     }
 
@@ -159,8 +211,8 @@ public class HomeFragment extends Fragment {
         rabbitDialogContents.add(new RabbitDialogContent("새로운 시작 🐰", "📖 오늘의 명언:\n“매일 아침은 새로운 시작이다.”\n\n💡 활기: 활기찬 하루를 시작해보세요!"));
         rabbitDialogContents.add(new RabbitDialogContent("감사하는 마음 🐰", "📖 오늘의 명언:\n“감사하는 마음은 행복의 씨앗이다.”\n\n💡 감사: 주변의 작은 것들에 감사함을 느껴보세요!"));
         rabbitDialogContents.add(new RabbitDialogContent("도전 정신 🐰", "📖 오늘의 명언:\n“불가능은 없다. 노력하면 무엇이든 가능하다.”\n\n💡 용기: 새로운 도전에 용기를 내보세요!"));
-
     }
+
     public static class RabbitDialogContent {
         String title;
         String message;
@@ -170,6 +222,4 @@ public class HomeFragment extends Fragment {
             this.message = message;
         }
     }
-
 }
-
