@@ -36,6 +36,7 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
         return new QuestViewHolder(view);
     }
 
+    // test
     @Override
     public void onBindViewHolder(@NonNull QuestViewHolder holder, int position) {
         QuestItem currentItem = questList.get(position);
