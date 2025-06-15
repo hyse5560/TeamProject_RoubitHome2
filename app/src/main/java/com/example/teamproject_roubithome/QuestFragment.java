@@ -1,7 +1,7 @@
 package com.example.teamproject_roubithome;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface; // DialogInterface import 추가
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -24,6 +24,7 @@ import static android.content.Context.MODE_PRIVATE;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Calendar;
 
 
 public class QuestFragment extends Fragment {
@@ -31,22 +32,17 @@ public class QuestFragment extends Fragment {
     private RecyclerView recyclerView;
     private QuestAdapter adapter;
     private SharedPreferences prefs;
-    private TextView tvQuestSummary; // tvQuestSummary 필드
+    private TextView tvQuestSummary;
 
     private static final String PREFS_NAME = "CheckInPrefs";
-    // 이 두 상수는 MainActivity에서 가져오므로 여기서는 삭제하거나,
-    // MainActivity.KEY_... 로 사용하도록 권장합니다.
-    // private static final String KEY_WISE_SAYING_REWARD_CLAIMED_TODAY = "wise_saying_reward_claimed_today";
-    // private static final String KEY_WISE_SAYING_VIEWED_TODAY = "wise_saying_viewed_today";
-
 
     // 퀘스트 목록 내 인덱스
     private static final int WISE_SAYING_QUEST_INDEX = 0;
     private static final int DIARY_QUEST_INDEX = 1;
     private static final int TODO_RECOMMEND_QUEST_INDEX = 2;
-    private static final int ROUTINE_QUEST_INDEX = 3; // "루틴 달성" 퀘스트 인덱스
+    private static final int ROUTINE_QUEST_INDEX = 3;
     // 총 일일 퀘스트 수
-    private static final int TOTAL_DAILY_QUESTS = 4; // 명언, 일기, TODO, 루틴
+    private static final int TOTAL_DAILY_QUESTS = 4;
 
 
     @Override
@@ -64,14 +60,125 @@ public class QuestFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recycler_view_quests);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // --- 여기에 tvQuestSummary 초기화 코드를 추가해야 합니다! ---
         tvQuestSummary = view.findViewById(R.id.tv_quest_summary);
-        // --------------------------------------------------------
+
+        // onCreateView에서는 어댑터만 초기화하고 데이터 로딩은 onResume에서 처리
+        adapter = new QuestAdapter(getContext(), new ArrayList<>(), new QuestAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(QuestItem item) {
+                if ("오늘의 명언 보기".equals(item.getTitle())) {
+                    if (item.isClaimed()) {
+                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
+                    } else if (item.isCompleted()) {
+                        if (getActivity() instanceof MainActivity) {
+                            MainActivity mainActivity = (MainActivity) getActivity();
+                            EnergyUpdateListener listener = mainActivity;
+                            listener.onEnergyUpdated(item.getReward());
+
+                            prefs.edit().putBoolean(MainActivity.KEY_WISE_SAYING_REWARD_CLAIMED_TODAY, true).apply();
+                            item.setClaimed(true);
+                            adapter.updateQuestItem(WISE_SAYING_QUEST_INDEX, item);
+                            updateQuestSummary();
+
+                            Toast.makeText(getContext(), "'오늘의 명언 보기' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).navigateToHomeForWiseSaying();
+                        }
+                    }
+                } else if ("일기쓰기".equals(item.getTitle())) {
+                    if (item.isClaimed()) {
+                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
+                    } else if (item.isCompleted()) {
+                        if (getActivity() instanceof MainActivity) {
+                            EnergyUpdateListener listener = (EnergyUpdateListener) getActivity();
+                            listener.onEnergyUpdated(item.getReward());
+
+                            prefs.edit().putBoolean(MainActivity.KEY_DIARY_REWARD_CLAIMED_TODAY, true).apply();
+                            item.setClaimed(true);
+                            adapter.updateQuestItem(DIARY_QUEST_INDEX, item);
+                            updateQuestSummary();
+
+                            Toast.makeText(getContext(), "'일기쓰기' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).showCalendarFragment();
+                        }
+                    }
+                } else if ("루빗에게 TODO 추천받기".equals(item.getTitle())) {
+                    if (item.isClaimed()) {
+                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
+                    } else if (item.isCompleted()) {
+                        if (getActivity() instanceof MainActivity) {
+                            MainActivity mainActivity = (MainActivity) getActivity();
+                            EnergyUpdateListener listener = mainActivity;
+                            listener.onEnergyUpdated(item.getReward());
+
+                            prefs.edit().putBoolean(MainActivity.KEY_TODO_REWARD_CLAIMED_TODAY, true).apply();
+                            item.setClaimed(true);
+                            adapter.updateQuestItem(TODO_RECOMMEND_QUEST_INDEX, item);
+                            updateQuestSummary();
+
+                            Toast.makeText(getContext(), "'루빗에게 TODO 추천받기' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        showTodoRecommendationDialog(item);
+                    }
+                } else if ("루틴 달성".equals(item.getTitle())) {
+                    if (item.isClaimed()) {
+                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
+                    } else if (item.isCompleted()) {
+                        if (getActivity() instanceof MainActivity) {
+                            MainActivity mainActivity = (MainActivity) getActivity();
+                            EnergyUpdateListener listener = mainActivity;
+                            listener.onEnergyUpdated(item.getReward());
+
+                            prefs.edit().putBoolean(MainActivity.KEY_ROUTINE_REWARD_CLAIMED_TODAY, true).apply();
+                            item.setClaimed(true);
+                            adapter.updateQuestItem(ROUTINE_QUEST_INDEX, item);
+                            updateQuestSummary();
+
+                            Toast.makeText(getContext(), "'루틴 달성' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        // HomeFragment로 이동하여 루틴을 달성하도록 유도
+                        getParentFragmentManager().beginTransaction()
+                                .replace(R.id.container, new HomeFragment())
+                                .addToBackStack(null) // 이전 프래그먼트로 돌아갈 수 있도록 스택에 추가
+                                .commit();
+                        Toast.makeText(getContext(), "홈 화면으로 이동했어요! 루틴을 달성하고 돌아오세요.", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        });
+        recyclerView.setAdapter(adapter);
+
+        // 초기 로드 시 퀘스트 진행 상황 업데이트는 onResume에서 처리되도록 합니다.
+        // updateQuestSummary(); // 여기서는 제거
+
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 프래그먼트가 다시 활성화될 때마다 퀘스트 목록과 요약을 갱신합니다.
+        loadQuestsAndBindAdapter(); // 퀘스트 목록 데이터 갱신
+        updateQuestSummary(); // 퀘스트 요약 텍스트 갱신
+    }
+
+    // 퀘스트 목록을 로드하고 어댑터를 바인딩하는 새로운 메서드
+    private void loadQuestsAndBindAdapter() {
+        // 액티비티에 붙어있지 않거나 prefs가 초기화되지 않았으면 실행하지 않음
+        if (getActivity() == null || prefs == null) {
+            return;
+        }
 
         List<QuestItem> questList = new ArrayList<>();
 
         // 1. "오늘의 명언 보기" 퀘스트 상태 로드 및 추가
-        // MainActivity의 상수를 직접 사용합니다.
         boolean hasViewedWiseSayingToday = prefs.getBoolean(MainActivity.KEY_WISE_SAYING_VIEWED_TODAY, false);
         boolean hasClaimedWiseSayingRewardToday = prefs.getBoolean(MainActivity.KEY_WISE_SAYING_REWARD_CLAIMED_TODAY, false);
         QuestItem wiseSayingQuest = new QuestItem("오늘의 명언 보기", 33, hasViewedWiseSayingToday, hasClaimedWiseSayingRewardToday);
@@ -95,110 +202,19 @@ public class QuestFragment extends Fragment {
         QuestItem routineQuest = new QuestItem("루틴 달성", 25, hasCompletedRoutineToday, hasClaimedRoutineRewardToday);
         questList.add(routineQuest);
 
+        // 어댑터 데이터 셋을 업데이트하고 알립니다.
+        if (adapter != null) { // adapter가 null이 아닐 때만 호출
+            adapter.setQuestList(questList);
+            adapter.notifyDataSetChanged();
+        }
+    } // <-- 이 중괄호가 이전 코드에서 누락되어 오류가 발생했습니다.
 
-        adapter = new QuestAdapter(getContext(), questList, new QuestAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(QuestItem item) {
-                if ("오늘의 명언 보기".equals(item.getTitle())) {
-                    if (item.isClaimed()) {
-                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
-                    } else if (item.isCompleted()) {
-                        if (getActivity() instanceof MainActivity) {
-                            MainActivity mainActivity = (MainActivity) getActivity();
-                            EnergyUpdateListener listener = mainActivity;
-                            listener.onEnergyUpdated(item.getReward());
-
-                            // KEY_WISE_SAYING_REWARD_CLAIMED_TODAY는 MainActivity의 것을 사용
-                            prefs.edit().putBoolean(MainActivity.KEY_WISE_SAYING_REWARD_CLAIMED_TODAY, true).apply();
-                            item.setClaimed(true);
-                            adapter.updateQuestItem(WISE_SAYING_QUEST_INDEX, item);
-                            updateQuestSummary(); // 퀘스트 진행 상황 업데이트
-
-                            Toast.makeText(getContext(), "'오늘의 명언 보기' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        if (getActivity() instanceof MainActivity) {
-                            ((MainActivity) getActivity()).navigateToHomeForWiseSaying();
-                        }
-                    }
-                } else if ("일기쓰기".equals(item.getTitle())) {
-                    if (item.isClaimed()) {
-                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
-                    } else if (item.isCompleted()) {
-                        if (getActivity() instanceof MainActivity) {
-                            EnergyUpdateListener listener = (EnergyUpdateListener) getActivity();
-                            listener.onEnergyUpdated(item.getReward());
-
-                            prefs.edit().putBoolean(MainActivity.KEY_DIARY_REWARD_CLAIMED_TODAY, true).apply();
-                            item.setClaimed(true);
-                            adapter.updateQuestItem(DIARY_QUEST_INDEX, item);
-                            updateQuestSummary(); // 퀘스트 진행 상황 업데이트
-
-                            Toast.makeText(getContext(), "'일기쓰기' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        if (getActivity() instanceof MainActivity) {
-                            ((MainActivity) getActivity()).showCalendarFragment();
-                        }
-                    }
-                } else if ("루빗에게 TODO 추천받기".equals(item.getTitle())) {
-                    if (item.isClaimed()) {
-                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
-                    } else if (item.isCompleted()) {
-                        if (getActivity() instanceof MainActivity) {
-                            MainActivity mainActivity = (MainActivity) getActivity();
-                            EnergyUpdateListener listener = mainActivity;
-                            listener.onEnergyUpdated(item.getReward());
-
-                            prefs.edit().putBoolean(MainActivity.KEY_TODO_REWARD_CLAIMED_TODAY, true).apply();
-                            item.setClaimed(true);
-                            adapter.updateQuestItem(TODO_RECOMMEND_QUEST_INDEX, item);
-                            updateQuestSummary(); // 퀘스트 진행 상황 업데이트
-
-                            Toast.makeText(getContext(), "'루빗에게 TODO 추천받기' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        // showTodoRecommendationDialog(item); <-- item을 파라미터로 넘겨줘야 합니다.
-                        showTodoRecommendationDialog(item);
-                    }
-                } else if ("루틴 달성".equals(item.getTitle())) {
-                    if (item.isClaimed()) {
-                        Toast.makeText(getContext(), "이미 보상을 받았습니다.", Toast.LENGTH_SHORT).show();
-                    } else if (item.isCompleted()) {
-                        if (getActivity() instanceof MainActivity) {
-                            MainActivity mainActivity = (MainActivity) getActivity();
-                            EnergyUpdateListener listener = mainActivity;
-                            listener.onEnergyUpdated(item.getReward());
-
-                            prefs.edit().putBoolean(MainActivity.KEY_ROUTINE_REWARD_CLAIMED_TODAY, true).apply();
-                            item.setClaimed(true);
-                            adapter.updateQuestItem(ROUTINE_QUEST_INDEX, item);
-                            updateQuestSummary(); // 퀘스트 진행 상황 업데이트
-
-                            Toast.makeText(getContext(), "'루틴 달성' 퀘스트 완료! 에너지 +" + item.getReward() + "% 획득!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        getParentFragmentManager().beginTransaction()
-                                .replace(R.id.container, new HomeFragment())
-                                .addToBackStack(null)
-                                .commit();
-                        Toast.makeText(getContext(), "홈 화면으로 이동했어요! 루틴을 달성하고 돌아오세요.", Toast.LENGTH_LONG).show();
-                    }
-                }
-            }
-        });
-        recyclerView.setAdapter(adapter);
-
-        updateQuestSummary(); // 초기 로드 시 퀘스트 진행 상황 업데이트
-
-        return view;
-    }
 
     // 퀘스트 진행 상황 계산 및 업데이트 메서드
     private void updateQuestSummary() {
         // getActivity()가 null이 아닌지 확인하여 안정성 강화
-        if (getActivity() == null) {
-            return; // 액티비티에 붙어있지 않으면 아무것도 하지 않음
+        if (getActivity() == null || tvQuestSummary == null || prefs == null) {
+            return; // 액티비티에 붙어있지 않거나 UI 요소/prefs가 초기화되지 않았으면 아무것도 하지 않음
         }
 
         int completedCount = 0;
@@ -225,10 +241,7 @@ public class QuestFragment extends Fragment {
         }
 
         // tvQuestSummary 텍스트 업데이트
-        // tvQuestSummary가 onCreateView에서 올바르게 초기화되었는지 확인 후 사용
-        if (tvQuestSummary != null) {
-            tvQuestSummary.setText(completedCount + "/" + TOTAL_DAILY_QUESTS + " 완료");
-        }
+        tvQuestSummary.setText(completedCount + "/" + TOTAL_DAILY_QUESTS + " 완료");
     }
 
     // showTodoRecommendationDialog 메서드 시그니처 변경 (QuestItem 파라미터 추가)

@@ -28,6 +28,12 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
         this.questList = questList;
         this.listener = listener;
     }
+    public void setQuestList(List<QuestItem> newQuestList) {
+        this.questList = newQuestList;
+        // notifyDataSetChanged()는 QuestFragment에서 호출할 것이므로 여기서는 제거합니다.
+        // this.notifyDataSetChanged(); // QuestFragment에서 직접 호출할 예정
+    }
+
 
     @NonNull
     @Override

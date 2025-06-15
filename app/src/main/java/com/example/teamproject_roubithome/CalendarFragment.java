@@ -43,7 +43,7 @@ public class CalendarFragment extends Fragment {
         // 메모 저장용 SharedPreferences
         memoPrefs = requireContext().getSharedPreferences("Memos", MODE_PRIVATE);
         // 앱 전체 설정(퀘스트)용 SharedPreferences (MainActivity와 동일한 이름 사용)
-        appPrefs = requireContext().getSharedPreferences("CheckInPrefs", MODE_PRIVATE);
+        appPrefs = requireContext().getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE);
     }
 
     @Nullable
@@ -66,6 +66,7 @@ public class CalendarFragment extends Fragment {
             selectedMonth = month;
             selectedDay = dayOfMonth;
             updateDday(year, month, dayOfMonth);
+            loadMemoForSelectedDate(year, month, dayOfMonth);
         });
 
         writeMemoButton.setOnClickListener(v -> {
@@ -123,6 +124,21 @@ public class CalendarFragment extends Fragment {
     }
 
     // ... (updateDday, showAppUsageDays, getTodayString, calculateDateDiffInDays 메서드들은 그대로 유지) ...
+
+    private void loadMemoForSelectedDate(int year, int month, int dayOfMonth) {
+        String dateKey = year + "-" + (month + 1) + "-" + dayOfMonth;
+        String savedMemo = memoPrefs.getString("memo_" + dateKey, "");
+        String savedMemoDate = memoPrefs.getString("memoDate_" + dateKey, "");
+
+        if (!savedMemo.isEmpty()) {
+            // 예를 들어, 화면에 memoDisplayTextView라는 TextView가 있다면:
+            // memoDisplayTextView.setText("메모: " + savedMemo + "\n(작성일: " + savedMemoDate + ")");
+            // Toast.makeText(requireContext(), "선택된 날짜에 메모가 있습니다.", Toast.LENGTH_SHORT).show();
+        } else {
+            // memoDisplayTextView.setText("선택된 날짜에 메모가 없습니다.");
+            // Toast.makeText(requireContext(), "선택된 날짜에 메모가 없습니다.", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     private void updateDday(int year, int month, int dayOfMonth) {
         java.util.Calendar today = java.util.Calendar.getInstance();

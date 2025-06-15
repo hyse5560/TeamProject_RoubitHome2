@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity implements EnergyUpdateListe
     private HomeFragment homeFragment;
     private SharedPreferences prefs;
 
-    private static final String PREFS_NAME = "CheckInPrefs"; // 모든 퀘스트 상태를 저장할 SharedPreferences 파일 이름
+    public static final String PREFS_NAME = "CheckInPrefs"; // 모든 퀘스트 상태를 저장할 SharedPreferences 파일 이름
     public static final String KEY_WISE_SAYING_VIEWED_TODAY = "wise_saying_viewed_today";
     public static final String KEY_WISE_SAYING_REWARD_CLAIMED_TODAY = "wise_saying_reward_claimed_today";
     public static final String KEY_LAST_RESET_DATE = "last_reset_date";
@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements EnergyUpdateListe
     // 루틴 달성 퀘스트를 위한 새로운 키 추가
     public static final String KEY_ROUTINE_COMPLETED_TODAY = "routine_completed_today"; // 루틴 완료 상태
     public static final String KEY_ROUTINE_REWARD_CLAIMED_TODAY = "routine_reward_claimed_today"; // 루틴 보상 획득 상태
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
